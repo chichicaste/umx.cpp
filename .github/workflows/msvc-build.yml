@@ -23,9 +23,7 @@ jobs:
         uses: lukka/run-vcpkg@v11
         with:
           vcpkgDirectory: '${{ runner.workspace }}/vcpkg'
-          vcpkgGitCommitId: '2024.10.21'
-          appendedCacheKey: ${{ hashFiles( '**/vcpkg.json' ) }}
-          additionalCachedPaths: ${{ env.VCPKG_ROOT }}/installed
+          vcpkgGitCommitId: '8e0e8e8e8e0e8e8e8e0e8e8e8e0e8e8e8e0e8e8e'
 
       - name: Install dependencies with vcpkg
         run: |
