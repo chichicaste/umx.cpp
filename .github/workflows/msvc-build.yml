@@ -22,12 +22,14 @@ jobs:
       - name: Setup vcpkg
         uses: lukka/run-vcpkg@v11
         with:
-          vcpkgDirectory: '${{ runner.workspace }}/vcpkg'
-          vcpkgGitCommitId: '8e0e8e8e8e0e8e8e8e0e8e8e8e0e8e8e8e0e8e8e'
+          vcpkgDirectory: '${{ github.workspace }}/vcpkg'
+          vcpkgGitCommitId: 'master'
+          appendedCacheKey: ${{ hashFiles( '**/vcpkg.json' ) }}
+          vcpkgJsonGlob: '**/vcpkg.json'
 
       - name: Install dependencies with vcpkg
         run: |
-          cd ${{ runner.workspace }}/vcpkg
+          cd ${{ github.workspace }}/vcpkg
           .\vcpkg install eigen3:x64-windows
 
       - name: Setup CMake
@@ -38,7 +40,7 @@ jobs:
           mkdir build
           cd build
           cmake .. -G "${{ matrix.generator }}" -A ${{ matrix.arch }} `
-            -DCMAKE_TOOLCHAIN_FILE="${{ runner.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake"
+            -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake"
 
       - name: Build Release
         run: |
