@@ -3,3 +3,8 @@
 *.wav
 !/test/data/*.wav
 *.json
+
+# Personal workflow documentation
+REPO_MANAGEMENT.md
+
+WORKFLOW_PERSONAL.md
