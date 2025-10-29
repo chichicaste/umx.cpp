@@ -297,32 +297,38 @@ This creates a compressed model file (~45 MB) from the original PyTorch weights.
 
 ## Building on Windows x64 with Visual Studio 2022
 
-### Method 1: Using CMake GUI
+### Prerequisites: Load MSVC x64 Environment
 
-1. **Open CMake GUI**
-   - Launch CMake (cmake-gui)
+Before building, you **must** load the Visual Studio x64 development environment. You have two options:
 
-2. **Configure Source and Build Directories**
-   - Source code: `C:/Users/YourUsername/source/repos/umx.cpp`
-   - Build directory: `C:/Users/YourUsername/source/repos/umx.cpp/build`
+**Option 1: Use x64 Native Tools Command Prompt (Recommended)**
+- Open Start Menu
+- Search for "x64 Native Tools Command Prompt for VS 2022"
+- This automatically loads the MSVC x64 environment
 
-3. **Configure**
-   - Click "Configure"
-   - Select "Visual Studio 17 2022" as the generator
-   - Select "x64" as the platform
-   - Click "Finish"
+**Option 2: Load environment in existing PowerShell/CMD**
+```powershell
+# Run this command to load the MSVC x64 environment
+"C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
 
-4. **Generate**
-   - Click "Generate" to create Visual Studio solution files
+# Or for Professional/Enterprise editions:
+"C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Auxiliary\Build\vcvars64.bat"
+"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+```
 
-5. **Open in Visual Studio**
-   - Click "Open Project" or navigate to `build/umx.cpp.sln`
+### Build Commands (One-Line)
 
-6. **Build**
-   - Select "Release" configuration
-   - Build → Build Solution (Ctrl+Shift+B)
+Once the MSVC x64 environment is loaded, use this single command to build:
 
-### Method 2: Using Command Line (Recommended)
+```powershell
+# Navigate to project root and build in one command
+cd C:\Users\YourUsername\source\repos\umx.cpp
+mkdir build && cd build && cmake .. -G "Visual Studio 17 2022" -A x64 && cmake --build . --config Release --target umx.cpp.main -j 8
+```
+
+### Build Commands (Step-by-Step)
+
+If you prefer to see each step:
 
 ```powershell
 # Navigate to project root
@@ -335,27 +341,24 @@ cd build
 # Configure with CMake (using Visual Studio 2022 generator)
 cmake .. -G "Visual Studio 17 2022" -A x64
 
-# Build the project in Release mode
-cmake --build . --config Release
+# Build the project in Release mode with parallel compilation (8 jobs)
+cmake --build . --config Release --target umx.cpp.main -j 8
 
-# Or build specific targets
-cmake --build . --config Release --target umx.cpp.main
-cmake --build . --config Release --target umx.cpp.lib
+# Or build all targets
+cmake --build . --config Release -j 8
+
+# Or build specific targets individually
+cmake --build . --config Release --target umx.cpp.lib -j 8
+cmake --build . --config Release --target umx.cpp.main -j 8
 ```
 
-### Method 3: Using Visual Studio Developer Command Prompt
+### Build Options Explained
 
-```powershell
-# Open "x64 Native Tools Command Prompt for VS 2022"
-# Navigate to project root
-cd C:\Users\YourUsername\source\repos\umx.cpp
-
-# Create and configure build
-mkdir build
-cd build
-cmake .. -G "Visual Studio 17 2022" -A x64
-cmake --build . --config Release
-```
+- `-G "Visual Studio 17 2022"`: Specifies the CMake generator for VS 2022
+- `-A x64`: Sets the platform architecture to 64-bit
+- `--config Release`: Builds optimized release version (much faster than Debug)
+- `--target umx.cpp.main`: Builds only the main executable (and its dependencies)
+- `-j 8`: Uses 8 parallel jobs for faster compilation (adjust based on your CPU cores)
 
 ## Build Output
 
