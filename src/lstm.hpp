@@ -1,6 +1,7 @@
 #ifndef LSTM_HPP
 #define LSTM_HPP
 
+#include "export.hpp"
 #include "model.hpp"
 #include <Eigen/Dense>
 
@@ -15,11 +16,11 @@ struct lstm_data
     Eigen::MatrixXf c[3][2];
 };
 
-struct lstm_data create_lstm_data(int hidden_size, int seq_len);
+UMX_API struct lstm_data create_lstm_data(int hidden_size, int seq_len);
 
-void umx_lstm_set_zero(struct lstm_data *data);
+UMX_API void umx_lstm_set_zero(struct lstm_data *data);
 
-Eigen::MatrixXf umx_lstm_forward(struct umx_model *model, int target,
+UMX_API Eigen::MatrixXf umx_lstm_forward(struct umx_model *model, int target,
                                  const Eigen::MatrixXf &input,
                                  struct lstm_data *data, int hidden_size);
 

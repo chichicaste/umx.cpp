@@ -1,6 +1,7 @@
 #ifndef INFERENCE_HPP
 #define INFERENCE_HPP
 
+#include "export.hpp"
 #include "dsp.hpp"
 #include "lstm.hpp"
 #include "model.hpp"
@@ -17,7 +18,7 @@ const float TRANSITION_POWER = 1.0; // transition between segments
 
 // return 4 target waveforms from 1 target mix
 // do wiener-filtering and everything per-chunk
-std::vector<Eigen::MatrixXf>
+UMX_API std::vector<Eigen::MatrixXf>
 umx_inference(struct umx_model &model, const Eigen::MatrixXf audio,
               struct umxcpp::stft_buffers reusable_stft_buf,
               std::array<struct umxcpp::lstm_data, 4> &streaming_lstm_data);

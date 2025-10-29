@@ -1,6 +1,7 @@
 #ifndef MODEL_HPP
 #define MODEL_HPP
 
+#include "export.hpp"
 #include <Eigen/Dense>
 #include <array>
 #include <string>
@@ -55,7 +56,7 @@ struct umx_model
     float inference_progress = 0.0f;
 };
 
-bool load_umx_model(const std::string &model_dir, struct umx_model *model);
+UMX_API bool load_umx_model(const std::string &model_dir, struct umx_model *model);
 } // namespace umxcpp
 
 #endif // MODEL_HPP

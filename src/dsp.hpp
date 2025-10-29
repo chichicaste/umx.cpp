@@ -1,6 +1,7 @@
 #ifndef DSP_HPP
 #define DSP_HPP
 
+#include "export.hpp"
 #include <Eigen/Dense>
 #include <cassert>
 #include <complex>
@@ -103,16 +104,16 @@ struct stft_buffers
 };
 
 // waveform = 2d: (channels, samples)
-Eigen::MatrixXf load_audio(std::string filename);
+UMX_API Eigen::MatrixXf load_audio(std::string filename);
 
-void write_audio_file(const Eigen::MatrixXf &waveform, std::string filename);
+UMX_API void write_audio_file(const Eigen::MatrixXf &waveform, std::string filename);
 
 // combine magnitude and phase spectrograms into complex
-Eigen::Tensor3dXcf polar_to_complex(const Eigen::Tensor3dXf &magnitude,
+UMX_API Eigen::Tensor3dXcf polar_to_complex(const Eigen::Tensor3dXf &magnitude,
                                     const Eigen::Tensor3dXf &phase);
 
-void stft(struct stft_buffers &stft_buf);
-void istft(struct stft_buffers &stft_buf);
+UMX_API void stft(struct stft_buffers &stft_buf);
+UMX_API void istft(struct stft_buffers &stft_buf);
 
 } // namespace umxcpp
 

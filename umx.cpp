@@ -92,7 +92,7 @@ int main(int argc, const char **argv)
                   << std::endl;
 
         Eigen::MatrixXf audio_target = target_waveforms[target];
-        umxcpp::write_audio_file(audio_target, p_target);
+        umxcpp::write_audio_file(audio_target, p_target.string());
     }
 }
 

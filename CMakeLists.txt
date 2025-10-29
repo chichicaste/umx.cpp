@@ -7,22 +7,23 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
-set(CMAKE_CXX_FLAGS "-Wall -Wextra")
-set(CMAKE_CXX_FLAGS_DEBUG "-g")
-#set(CMAKE_CXX_FLAGS_RELEASE "-O3")
-
-# improve CMAKE_CXX_FLAGS_RELEASE to every possible optimization considering Eigen3, target arch (my CPU is a Ryzen 5950X), and compiler
-# also linux kernel features and whatnot
-# aside from "-O3"
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=native -mfma -ffast-math -fno-signed-zeros -fno-trapping-math -fassociative-math -freciprocal-math -fno-math-errno -fno-rounding-math -fno-signaling-nans -fno-unsafe-math-optimizations -fno-trapping-math -fno-math-errno")
-
-# define a macro NDEBUG for Eigen3 release builds
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DNDEBUG")
-
-# set EIGEN_USE_BLAS to 1 and link to OpenBLAS
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DEIGEN_USE_BLAS -DEIGEN_USE_LAPACKE")
-
 project(umx.cpp)
+
+# Set compiler flags based on compiler type
+if(MSVC)
+  # Remove any existing flags and set MSVC-specific ones
+  string(REPLACE "/W3" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+  string(REPLACE "-Wall" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+  string(REPLACE "-Wextra" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
+  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /DNDEBUG")
+else()
+  set(CMAKE_CXX_FLAGS "-Wall -Wextra")
+  set(CMAKE_CXX_FLAGS_DEBUG "-g")
+  set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=native -mfma -ffast-math -fno-signed-zeros -fno-trapping-math -fassociative-math -freciprocal-math -fno-math-errno -fno-rounding-math -fno-signaling-nans -fno-unsafe-math-optimizations -fno-trapping-math -fno-math-errno")
+  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DNDEBUG -DEIGEN_USE_BLAS -DEIGEN_USE_LAPACKE")
+endif()
 enable_testing()
 
 # set C++ standard to C++17
@@ -49,9 +50,11 @@ include_directories(vendor/zlib)
 add_definitions(-D_NO_LARGEFILE64_SOURCE -D_LARGEFILE_SOURCE)
 add_subdirectory(vendor/zlib)
 
-# add OpenBLAS for blas + lapack
-find_package(BLAS REQUIRED)
-find_package(LAPACK REQUIRED)
+# add OpenBLAS for blas + lapack (skip for MSVC)
+if(NOT MSVC)
+  find_package(BLAS REQUIRED)
+  find_package(LAPACK REQUIRED)
+endif()
 
 # include vendor submodules libnyquist
 include_directories(vendor/libnyquist/include)
@@ -64,7 +67,13 @@ file(GLOB SOURCES "src/*.cpp")
 
 # compile library, link against libnyquist
 add_library(umx.cpp.lib SHARED ${SOURCES})
-target_link_libraries(umx.cpp.lib libnyquist ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES} lapacke zlibstatic)
+# Define export macro for Windows DLL
+target_compile_definitions(umx.cpp.lib PRIVATE umx_cpp_lib_EXPORTS)
+if(MSVC)
+  target_link_libraries(umx.cpp.lib libnyquist zlibstatic)
+else()
+  target_link_libraries(umx.cpp.lib libnyquist ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES} lapacke zlibstatic)
+endif()
 if(OPENMP_FOUND)
     target_link_libraries(umx.cpp.lib ${OpenMP_CXX_LIBRARIES})
 endif()
@@ -87,10 +96,12 @@ add_executable(umx.cpp.main umx.cpp)
 target_link_libraries(umx.cpp.main umx.cpp.lib)
 
 # add target to run cpp tests in test/ directory with gtest
+# NOTE: Google Test is not configured in this project, so tests are disabled
+# To enable tests, install Google Test and uncomment the lines below
 
 # include test/*.cpp as test files
-file(GLOB TEST_SOURCES "test/*.cpp")
+# file(GLOB TEST_SOURCES "test/*.cpp")
 
-add_executable(umx.cpp.test ${TEST_SOURCES})
-target_link_libraries(umx.cpp.test umx.cpp.lib gtest gtest_main libnyquist)
-add_test(NAME tests COMMAND umx.cpp.test)
+# add_executable(umx.cpp.test ${TEST_SOURCES})
+# target_link_libraries(umx.cpp.test umx.cpp.lib gtest gtest_main libnyquist)
+# add_test(NAME tests COMMAND umx.cpp.test)
