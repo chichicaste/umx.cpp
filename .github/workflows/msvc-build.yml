@@ -1,0 +1,78 @@
+name: MSVC Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*-msvc'
+
+jobs:
+  build:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        include:
+          - { generator: "Visual Studio 17 2022", arch: "x64" }
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgDirectory: '${{ runner.workspace }}/vcpkg'
+          vcpkgGitCommitId: '2024.10.21'
+          appendedCacheKey: ${{ hashFiles( '**/vcpkg.json' ) }}
+          additionalCachedPaths: ${{ env.VCPKG_ROOT }}/installed
+
+      - name: Install dependencies with vcpkg
+        run: |
+          cd ${{ runner.workspace }}/vcpkg
+          .\vcpkg install eigen3:x64-windows
+
+      - name: Setup CMake
+        uses: lukka/get-cmake@latest
+
+      - name: Configure CMake
+        run: |
+          mkdir build
+          cd build
+          cmake .. -G "${{ matrix.generator }}" -A ${{ matrix.arch }} `
+            -DCMAKE_TOOLCHAIN_FILE="${{ runner.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake"
+
+      - name: Build Release
+        run: |
+          cd build
+          cmake --build . --config Release --parallel 8
+
+      - name: Create Release Artifacts
+        run: |
+          mkdir -p release_artifacts
+          copy build\Release\umx.cpp.main.exe release_artifacts\
+          copy build\Release\umx.cpp.lib.dll release_artifacts\
+          copy build\Release\umx.cpp.lib.lib release_artifacts\
+
+      - name: Create ZIP Archive
+        run: |
+          cd release_artifacts
+          7z a -tzip ..\umx.cpp-windows-x64-${{ github.ref_name }}.zip *
+          cd ..
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: umx.cpp-windows-x64-${{ github.ref_name }}.zip
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: umx.cpp-windows-x64-${{ github.ref_name }}
+          path: release_artifacts/
+          retention-days: 30
